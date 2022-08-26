@@ -9,6 +9,41 @@ var audio = new Audio("cuzcuz.mp3");
 var audioRaf = new Audio("rafvaga.mp3");
 var audioLose = new Audio("bahianolose.mp3");
 var stopGame = new Audio("stopgame.mp3");
+var fraquinha = new Audio("fraquinha.mp3");
+var caboCTaNoChao = new Audio("oh_polemico.mp3");
+var isMuted = true;
+
+var tracks = [
+  fraquinha,
+  caboCTaNoChao
+];
+var track = tracks[Math.floor(Math.random() * tracks.length)];
+
+function muteUnmute(){
+  if(track.muted) {
+    track.play();
+    document.getElementById("muted").style.display = "none";
+    document.getElementById("unmuted").style.display = "block";
+    return track.muted = false;
+  } else {
+    document.getElementById("muted").style.display = "block";
+    document.getElementById("unmuted").style.display = "none";
+    return track.muted = true;
+  }
+}
+
+function playNext() {
+  if(track.currentTime > 0 && !track.ended) {
+    document.getElementById("muted").style.display = "none";
+    document.getElementById("unmuted").style.display = "block";
+    muteUnmute();
+  } else {
+    track = tracks[Math.floor(Math.random() * tracks.length)];
+    track.play();
+  }
+}
+
+track.addEventListener('ended', playNext);
 
 audioRaf.volume = 0.2;
 const backgroundImage = PIXI.Sprite.from("bahiafundo.png");
@@ -43,6 +78,9 @@ const app = new PIXI.Application({
 });
 
 function playGame(){
+  track.pause();
+  document.getElementById("muted").style.display = "none";
+  document.getElementById("unmuted").style.display = "none";
   const hearts = document.getElementsByClassName("heart");
   if(hearts.length < 1){
     window.location.reload();
