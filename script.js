@@ -14,13 +14,51 @@ audioRaf.volume = 0.2;
 const backgroundImage = PIXI.Sprite.from("bahiafundo.png");
 const backgroundWin = PIXI.Sprite.from("juliette.png");
 const derrota = PIXI.Sprite.from("baianinhoperdeu.png");
-const derrotaBackground = PIXI.Sprite.from("bahiafundoderrota.png")
+const derrotaBackground = PIXI.Sprite.from("bahiafundoderrota.png");
+const startScreenImg = PIXI.Sprite.from("startscreen.png");
+const botaoStart = PIXI.Sprite.from("botao.png");
+
+const startScreen = new PIXI.Application({
+  width: 1000,
+  height: 400,
+});
+
+document.body.appendChild(startScreen.view);
+startScreen.stage.addChild(startScreenImg);
+startScreenImg.width = 1000;
+startScreenImg.height = 400;
+startScreen.stage.addChild(botaoStart);
+botaoStart.width = 200;
+botaoStart.height = 50;
+botaoStart.x = 100;
+botaoStart.y = 250;
+
+botaoStart.interactive = true;
+botaoStart.buttonMode = true;
+botaoStart.on('pointerdown', playGame);
 
 const app = new PIXI.Application({
   width: 1000,
   height: 400,
 });
-document.body.appendChild(app.view);
+
+function playGame(){
+  const hearts = document.getElementsByClassName("heart");
+  if(hearts.length < 1){
+    window.location.reload();
+    audioRaf.play();
+    return;
+  }
+  document.getElementById("hearts").style.visibility = "visible";
+  document.body.appendChild(app.view);
+  app.x = startScreen.x;
+  app.y = startScreen.y;
+  app.width = startScreen.width;
+  app.height = startScreen.height;
+  document.body.removeChild(startScreen.view);
+  audioRaf.play();
+  app.ticker.add(MainGame);
+}
 
 backgroundImage.width = 1000;
 backgroundImage.height = 400;
@@ -49,7 +87,7 @@ app.stage.addChild(kraken);
 
 kraken.width = 120;
 kraken.height = 120;
-const krakenSpeed = 3;
+let krakenSpeed = 3;
 kraken.x = app.view.width - kraken.width;
 kraken.y = app.view.height - kraken.height;
 kraken.isMoving = "left";
@@ -62,17 +100,15 @@ const MainGame = () => {
       baianinho.x += 5;
     }
     baianinho.moving = "right";
-    audioRaf.play();
   }
 
   if (left.isDown) {
-    if(baianinho.x < 0){
-      baianinho.x = app.view.width + baianinho.width;
+    if(baianinho.x + baianinho.width < 0){
+      baianinho.x = app.view.width;
     }else{
       baianinho.x -= 5;
     }
     baianinho.moving = "left";
-    audioRaf.play();
   }
 
   if (up.isDown && !baianinho.isJumping && !baianinho.isFalling) {
@@ -146,6 +182,8 @@ const MainGame = () => {
         derrota.y = 200;
         app.stage.removeChild(baianinho);
         app.ticker.remove(MainGame);
+
+        app.stage.addChild(botaoStart);
         audioRaf.pause()
         stopGame.play()
       }
@@ -168,6 +206,7 @@ const MainGame = () => {
     power.style.width = "0%";
     bar.style.width = "100%";
     document.getElementById("podertexto").innerText = "PARABENS JOAO VC VENCEU";
+    document.getElementById("hearts").style.visibility = "hidden";
 
     const winnerbraga = PIXI.Sprite.from("bragavitoria.png");
     app.stage.addChild(backgroundWin);
@@ -191,13 +230,17 @@ const MainGame = () => {
   const progress = parseInt(power.style.width.replace("%", ""));
   if(gota == null){
     gota = gerarGota();
-    if(progress > 50){
+    if(progress > 75) {
+      gota.ySpeed = 6;
+      krakenSpeed = 6
+    } 
+    else if(progress > 50) {
       gota.ySpeed = 4;
+      krakenSpeed = 4;
     }
+    
   }
 };
-
-app.ticker.add(MainGame);
 
 function isCollided(object1, object2) {
   const bounds1 = object1.getBounds();
